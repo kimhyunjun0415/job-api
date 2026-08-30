@@ -1,0 +1,23 @@
+name: Send test ntfy notification
+
+on:
+  workflow_dispatch: {}
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send one test notification
+        env:
+          NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
+        run: |
+          curl -sS https://ntfy.sh/ \
+            -H "Content-Type: application/json; charset=utf-8" \
+            -d @- <<EOF
+          {
+            "topic": "${NTFY_TOPIC}",
+            "title": "테스트 · 신규 공고",
+            "message": "[테스트] 차량 랩핑 기술자 모집 - 실제 공고 아님, 알림 파이프라인 확인용",
+            "click": "https://kimhyunjun0415.github.io/job-api/"
+          }
+          EOF
