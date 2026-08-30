@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-<title>랩핑잡 · 차량 랩핑/PPF 채용 알림</title>
+<title>랩핑잡 · 차량 랩핑/PPF 채용 바로가기</title>
 <link rel="manifest" href="manifest.json" />
 <meta name="theme-color" content="#14161A" />
 <link rel="icon" href="icon-192.png" />
@@ -27,74 +27,20 @@
   header .brand{display:flex;align-items:center;gap:8px;margin-bottom:4px;}
   header .brand span{font-weight:600;font-size:18px;letter-spacing:.02em;}
   header p{margin:0;font-size:12.5px;color:var(--text-dim);}
-  .banner{margin:16px 20px 0;display:flex;gap:8px;background:rgba(245,194,66,.1);
-    border:1px solid rgba(245,194,66,.25);border-radius:10px;padding:10px 12px;}
-  .banner p{margin:0;font-size:11.5px;color:var(--yellow);line-height:1.5;}
+  .banner{margin:16px 20px 0;display:flex;gap:8px;background:rgba(143,168,184,.1);
+    border:1px solid rgba(143,168,184,.25);border-radius:10px;padding:10px 12px;}
+  .banner p{margin:0;font-size:11.5px;color:var(--accent);line-height:1.5;}
   .section{padding:16px 20px 0;}
+  .section:last-child{padding-bottom:20px;}
   .label{display:flex;align-items:center;gap:6px;color:var(--text-dim);font-size:10.5px;
     letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px;}
-  .chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;}
-  .chip{display:inline-flex;align-items:center;gap:5px;font-size:12px;padding:5px 10px;
-    border-radius:999px;background:rgba(143,168,184,.15);color:var(--accent);
-    border:1px solid rgba(143,168,184,.25);}
-  .chip button{background:none;border:none;color:inherit;cursor:pointer;font-size:12px;line-height:1;}
-  .region-chip{font-size:12px;padding:5px 10px;border-radius:999px;background:rgba(255,255,255,.05);
-    color:var(--text-dim);border:1px solid var(--line);cursor:pointer;}
-  .region-chip.active{background:rgba(245,194,66,.15);color:var(--yellow);border-color:rgba(245,194,66,.3);}
-  .tabs{display:flex;gap:20px;padding:0 20px;margin-top:18px;border-bottom:1px solid var(--line);}
-  .tab{background:none;border:none;color:var(--text-mute);font-family:'Oswald',sans-serif;
-    font-size:13px;letter-spacing:.02em;padding-bottom:12px;border-bottom:2px solid transparent;cursor:pointer;}
-  .tab.active{color:var(--text);border-bottom-color:var(--accent);}
-  .content{padding:16px 20px 24px;min-height:360px;}
-  .job-card{position:relative;background:var(--surface);border:1px solid var(--line);border-radius:12px;
-    padding:14px;margin-bottom:12px;overflow:hidden;}
-  .job-card .fold{position:absolute;top:-4px;right:-4px;width:36px;height:36px;background:var(--panel);
-    border-bottom:1px solid var(--line);border-left:1px solid var(--line);
-    clip-path:polygon(100% 0,0 0,100% 100%);}
-  .job-top{display:flex;justify-content:space-between;margin-bottom:6px;}
-  .job-tag{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--accent);text-transform:uppercase;}
-  .job-urgent{font-size:10px;font-family:'JetBrains Mono',monospace;padding:2px 8px;border-radius:999px;
-    background:rgba(232,93,44,.15);color:var(--orange);border:1px solid rgba(232,93,44,.3);}
-  .job-title{font-weight:600;font-size:15px;margin:0 0 4px;padding-right:20px;line-height:1.4;}
-  .job-company{font-size:13px;color:var(--text-dim);margin:0 0 10px;}
-  .job-meta{display:flex;justify-content:space-between;align-items:center;}
-  .job-meta .left{display:flex;gap:10px;font-size:12px;color:var(--text-dim);}
-  .job-pay{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--yellow);}
   .site-card{display:flex;justify-content:space-between;align-items:center;background:var(--surface);
     border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:10px;text-decoration:none;color:inherit;}
   .site-name{display:flex;align-items:center;gap:6px;font-weight:600;font-size:14px;}
   .badge{font-family:'JetBrains Mono',monospace;font-size:9px;padding:2px 6px;border-radius:999px;border:1px solid var(--line);color:var(--text-mute);}
   .badge.direct{color:var(--accent);border-color:rgba(143,168,184,.3);background:rgba(143,168,184,.1);}
   .site-note{font-size:11.5px;color:var(--text-mute);margin:3px 0 0;}
-  .alert-card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:12px;}
-  .alert-card h4{margin:0 0 4px;font-size:13.5px;display:flex;align-items:center;gap:6px;}
-  .alert-card p{margin:0;font-size:12px;color:var(--text-dim);line-height:1.5;}
-  .row-between{display:flex;justify-content:space-between;align-items:center;}
-  input.kw-input{background:transparent;border:none;outline:none;color:var(--text);font-size:12px;width:56px;}
-  .add-chip{display:flex;align-items:center;gap:4px;background:rgba(255,255,255,.05);border-radius:999px;padding:4px 4px 4px 10px;}
-  .add-btn{width:16px;height:16px;border-radius:999px;background:rgba(143,168,184,.25);color:var(--accent);
-    border:none;display:flex;align-items:center;justify-content:center;font-size:11px;cursor:pointer;}
-  .site-tabbar{display:flex;gap:6px;overflow-x:auto;padding-bottom:10px;margin-bottom:10px;
-    border-bottom:1px solid var(--line);}
-  .site-tabbar::-webkit-scrollbar{display:none;}
-  .site-tab{flex:0 0 auto;font-family:'Inter',sans-serif;font-size:12px;padding:6px 12px;border-radius:999px;
-    background:rgba(255,255,255,.05);color:var(--text-dim);border:1px solid var(--line);cursor:pointer;white-space:nowrap;}
-  .site-tab.active{background:rgba(143,168,184,.18);color:var(--accent);border-color:rgba(143,168,184,.35);}
-  .frame-wrap{position:relative;width:100%;height:62vh;min-height:420px;border-radius:12px;overflow:hidden;
-    border:1px solid var(--line);background:var(--surface);}
-  .frame-wrap.expanded{position:fixed;inset:0;z-index:100;height:100vh;min-height:0;border-radius:0;
-    max-width:none;}
-  .frame-expand-btn{position:absolute;top:8px;right:8px;z-index:2;width:32px;height:32px;border-radius:8px;
-    background:rgba(15,16,19,.85);color:var(--text);border:1px solid var(--line);font-size:15px;
-    display:flex;align-items:center;justify-content:center;cursor:pointer;backdrop-filter:blur(4px);}
-  .frame-status{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
-    font-size:12.5px;color:var(--text-mute);z-index:1;}
-  .site-frame{width:100%;height:100%;border:none;display:none;background:#fff;}
-  .frame-fallback{position:absolute;inset:0;display:none;flex-direction:column;align-items:center;
-    justify-content:center;gap:12px;text-decoration:none;padding:24px;text-align:center;}
-  .frame-fallback span:first-child{font-size:13px;color:var(--text-dim);line-height:1.5;}
-  .frame-fallback-btn{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--yellow);
-    border:1px solid rgba(245,194,66,.35);background:rgba(245,194,66,.1);padding:8px 16px;border-radius:999px;}
+  .site-arrow{color:var(--text-mute);font-size:14px;}
   .kw-preset-row{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;}
   .kw-preset{font-size:12px;padding:5px 11px;border-radius:999px;background:rgba(255,255,255,.05);
     color:var(--text-dim);border:1px solid var(--line);cursor:pointer;}
@@ -113,38 +59,29 @@
       <span style="color:var(--accent);">▦</span>
       <span class="display">랩핑잡</span>
     </div>
-    <p>차량 랩핑 · PPF 기술직 맞춤 채용 알림</p>
+    <p>차량 랩핑 · PPF 기술직 채용 바로가기</p>
   </header>
 
   <div class="banner">
-    <p>지금 보이는 공고는 샘플 데이터입니다. 사람인 API access-key 연동 후 실시간 공고로 교체됩니다.</p>
+    <p>검색어를 고르고 원하는 사이트를 누르면 새 탭에서 최신 공고를 바로 확인할 수 있어요.</p>
   </div>
 
   <div class="section">
-    <div class="label">🔍 키워드</div>
-    <div class="chips" id="kwChips"></div>
-    <div class="label">📍 지역</div>
-    <div class="chips" id="regionChips"></div>
+    <div class="label">🔤 검색어</div>
+    <div class="kw-preset-row" id="kwPresetRow"></div>
+    <div class="kw-custom-row">
+      <input id="kwCustomInput" class="kw-custom-input" placeholder="직접 입력 (예: 랩핑기사)" />
+      <button class="kw-custom-btn" onclick="applyCustomKw()">적용</button>
+    </div>
   </div>
 
-  <div class="tabs" id="tabs">
-    <button class="tab active" data-tab="jobs">맞춤 공고</button>
-    <button class="tab" data-tab="sites">바로가기</button>
-    <button class="tab" data-tab="alerts">알림 설정</button>
+  <div class="section">
+    <div class="label">📌 바로가기</div>
+    <div id="siteList"></div>
   </div>
-
-  <div class="content" id="content"></div>
 </div>
 
 <script>
-const jobs = [
-  {title:"차량 랩핑 기술자 모집 (경력 2년 이상)", company:"○○카스타일링", location:"서울 강남구", tag:"정규직", pay:"월 320만원~", posted:"3시간 전", urgent:false},
-  {title:"PPF 시공 전문가 채용 · 즉시 근무 가능자 우대", company:"서울PPF스튜디오", location:"서울 송파구", tag:"경력직", pay:"협의 (기술급)", posted:"5시간 전", urgent:true},
-  {title:"수입차 랩핑/데칼 작업자 구인", company:"OO오토랩", location:"서울 성동구", tag:"정규직", pay:"월 350만원~", posted:"어제", urgent:false},
-  {title:"PPF·틴팅 병행 가능 기술자 모집", company:"블랙쉴드 오토", location:"서울 마포구", tag:"계약직", pay:"시공 건당", posted:"어제", urgent:true},
-  {title:"랩핑샵 신입/보조 기사 모집 (교육 제공)", company:"필름웍스", location:"서울 강서구", tag:"인턴/수습", pay:"월 250만원~", posted:"2일 전", urgent:false},
-];
-
 const sites = [
   {name:"사람인", note:"검색 결과 바로 표시", urlTpl:"https://www.saramin.co.kr/zf_user/search/recruit?searchword={kw}", direct:true},
   {name:"잡코리아", note:"검색 결과 바로 표시", urlTpl:"https://www.jobkorea.co.kr/Search/?stext={kw}", direct:true},
@@ -152,108 +89,16 @@ const sites = [
   {name:"원티드", note:"검색 결과 바로 표시", urlTpl:"https://www.wanted.co.kr/search?query={kw}", direct:true},
   {name:"알바천국", note:"홈에서 직접 검색 필요", urlTpl:null, url:"https://www.alba.co.kr/", direct:false},
   {name:"인크루트", note:"홈에서 직접 검색 필요", urlTpl:null, url:"https://www.incruit.com/", direct:false},
-  {name:"워크넷 (고용노동부)", note:"홈에서 직접 검색 필요", urlTpl:null, url:"https://www.work.go.kr/", direct:false},
+  {name:"고용24 (고용노동부)", note:"홈에서 직접 검색 필요", urlTpl:null, url:"https://www.work24.go.kr/", direct:false},
   {name:"당근 알바", note:"홈에서 직접 검색 필요", urlTpl:null, url:"https://www.daangn.com/kr/jobs/", direct:false},
 ];
 
 const KEYWORD_PRESETS = ["차량랩핑", "랩핑", "PPF", "랩핑,PPF", "차량랩핑,PPF"];
 let currentKw = KEYWORD_PRESETS[0];
-let currentSiteIndex = 0;
 
 function siteUrl(site, kw){
   if(!site.direct || !site.urlTpl) return site.url;
   return site.urlTpl.replace("{kw}", encodeURIComponent(kw));
-}
-
-let keywords = ["차량 랩핑", "PPF"];
-let region = "서울 전체";
-let activeTab = "jobs";
-const regions = ["서울 전체", "강남/서초", "성동/마포", "강서/양천", "경기 전체", "성남/분당", "수원/화성", "고양/파주"];
-
-function renderChips(){
-  document.getElementById("kwChips").innerHTML = keywords.map(k =>
-    `<span class="chip">${k}<button onclick="removeKw('${k}')">✕</button></span>`
-  ).join("") + `
-    <span class="add-chip">
-      <input class="kw-input" id="kwInput" placeholder="추가" onkeydown="if(event.key==='Enter')addKw()" />
-      <button class="add-btn" onclick="addKw()">+</button>
-    </span>`;
-
-  document.getElementById("regionChips").innerHTML = regions.map(r =>
-    `<button class="region-chip ${r===region?'active':''}" onclick="setRegion('${r}')">${r}</button>`
-  ).join("");
-}
-
-function addKw(){
-  const el = document.getElementById("kwInput");
-  const v = el.value.trim();
-  if(v && !keywords.includes(v)) keywords.push(v);
-  renderChips();
-}
-function removeKw(k){ keywords = keywords.filter(x=>x!==k); renderChips(); }
-function setRegion(r){ region = r; renderChips(); }
-
-function renderContent(){
-  const c = document.getElementById("content");
-  if(activeTab === "jobs"){
-    c.innerHTML = jobs.map(j => `
-      <div class="job-card">
-        <div class="fold"></div>
-        <div class="job-top">
-          <span class="job-tag">${j.tag}</span>
-          ${j.urgent ? '<span class="job-urgent">마감임박</span>' : ''}
-        </div>
-        <p class="job-title">${j.title}</p>
-        <p class="job-company">${j.company}</p>
-        <div class="job-meta">
-          <div class="left"><span>📍 ${j.location}</span><span>🕒 ${j.posted}</span></div>
-          <span class="job-pay">${j.pay}</span>
-        </div>
-      </div>`).join("");
-  } else if(activeTab === "sites"){
-    c.innerHTML = `
-      <div class="label">🔤 검색어 조합</div>
-      <div class="kw-preset-row" id="kwPresetRow"></div>
-      <div class="kw-custom-row">
-        <input id="kwCustomInput" class="kw-custom-input" placeholder="직접 입력 (예: 랩핑기사)" />
-        <button class="kw-custom-btn" onclick="applyCustomKw()">적용</button>
-      </div>
-      <div class="site-tabbar" id="siteTabbar"></div>
-      <div class="frame-wrap" id="frameWrap">
-        <button class="frame-expand-btn" id="frameExpandBtn" title="전체화면으로 보기">⤢</button>
-        <div class="frame-status" id="frameStatus">불러오는 중…</div>
-        <iframe id="siteFrame" class="site-frame" title="site preview"></iframe>
-        <a id="frameFallback" class="frame-fallback" target="_blank" rel="noopener noreferrer" style="display:none;">
-          <span>⚠️ 이 사이트는 화면 안에 표시할 수 없어요</span>
-          <span class="frame-fallback-btn">새 탭에서 열기 ↗</span>
-        </a>
-      </div>`;
-    renderKwPresets();
-    document.getElementById("frameExpandBtn").addEventListener("click", toggleExpand);
-    document.getElementById("siteTabbar").innerHTML = sites.map((s,i) =>
-      `<button class="site-tab ${i===currentSiteIndex?'active':''}" data-i="${i}">${s.name}</button>`
-    ).join("");
-    document.getElementById("siteTabbar").addEventListener("click", (e) => {
-      const btn = e.target.closest(".site-tab");
-      if(!btn) return;
-      currentSiteIndex = +btn.dataset.i;
-      document.querySelectorAll(".site-tab").forEach(t=>t.classList.toggle("active", t===btn));
-      loadSite(sites[currentSiteIndex]);
-    });
-    loadSite(sites[currentSiteIndex]);
-  } else {
-    c.innerHTML = `
-      <div class="alert-card">
-        <h4>🔔 신규 공고 알림</h4>
-        <p>access-key 연동 후 활성화됩니다. 키워드·지역 조건에 맞는 신규 공고가 올라오면 알려드려요.</p>
-      </div>
-      <div class="alert-card row-between">
-        <span style="font-size:13px;color:var(--text-dim);">확인 주기</span>
-        <span class="mono" style="font-size:12px;color:var(--accent);">하루 2회 (예정)</span>
-      </div>
-      <p style="font-size:11.5px;color:var(--text-mute);">▸ API 연동 완료 후 이 화면에서 알림 On/Off를 조절할 수 있어요.</p>
-    `;
-  }
 }
 
 function renderKwPresets(){
@@ -264,7 +109,7 @@ function renderKwPresets(){
     btn.addEventListener("click", () => {
       currentKw = btn.dataset.k;
       renderKwPresets();
-      loadSite(sites[currentSiteIndex]);
+      renderSites();
     });
   });
 }
@@ -274,66 +119,22 @@ function applyCustomKw(){
   if(!v) return;
   currentKw = v;
   renderKwPresets();
-  loadSite(sites[currentSiteIndex]);
+  renderSites();
 }
 
-function toggleExpand(){
-  const wrap = document.getElementById("frameWrap");
-  const btn = document.getElementById("frameExpandBtn");
-  const expanded = wrap.classList.toggle("expanded");
-  btn.textContent = expanded ? "✕" : "⤢";
-  btn.title = expanded ? "닫기" : "전체화면으로 보기";
+function renderSites(){
+  document.getElementById("siteList").innerHTML = sites.map(s => `
+    <a class="site-card" href="${siteUrl(s, currentKw)}" target="_blank" rel="noopener noreferrer">
+      <div>
+        <div class="site-name">${s.name} <span class="badge ${s.direct?'direct':''}">${s.direct?'바로검색':'홈'}</span></div>
+        <p class="site-note">${s.note}</p>
+      </div>
+      <span class="site-arrow">↗</span>
+    </a>`).join("");
 }
 
-function loadSite(site){
-  const status = document.getElementById("frameStatus");
-  const frame = document.getElementById("siteFrame");
-  const fallback = document.getElementById("frameFallback");
-  const url = siteUrl(site, currentKw);
-  status.style.display = "flex";
-  status.textContent = "불러오는 중…";
-  frame.style.display = "none";
-  fallback.style.display = "none";
-  fallback.href = url;
-  frame.src = url;
-
-  const check = setTimeout(() => {
-    try{
-      const blocked = frame.contentWindow.location.href === "about:blank";
-      if(blocked){
-        status.style.display = "none";
-        frame.style.display = "none";
-        fallback.style.display = "flex";
-      } else {
-        status.style.display = "none";
-        frame.style.display = "block";
-      }
-    }catch(e){
-      status.style.display = "none";
-      frame.style.display = "block";
-    }
-  }, 2200);
-
-  frame.onload = () => {
-    clearTimeout(check);
-    try{
-      if(frame.contentWindow.location.href === "about:blank") return;
-    }catch(e){}
-    status.style.display = "none";
-    frame.style.display = "block";
-  };
-}
-
-document.getElementById("tabs").addEventListener("click", (e) => {
-  const btn = e.target.closest(".tab");
-  if(!btn) return;
-  activeTab = btn.dataset.tab;
-  document.querySelectorAll(".tab").forEach(t => t.classList.toggle("active", t===btn));
-  renderContent();
-});
-
-renderChips();
-renderContent();
+renderKwPresets();
+renderSites();
 
 if("serviceWorker" in navigator){
   window.addEventListener("load", () => {
@@ -341,6 +142,5 @@ if("serviceWorker" in navigator){
   });
 }
 </script>
-  <script src="onesignal-setup.js"></script>
 </body>
 </html>
