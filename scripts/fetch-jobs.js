@@ -24,6 +24,9 @@ async function ensureFetchAvailable() {
 
 const CONFIG_PATH = path.join(__dirname, 'config.json');
 const SEEN_PATH = path.join(process.cwd(), 'data', 'seen.json');
+// 평소엔 사이트당 10개로 알림 폭탄을 막고, 밀린 걸 한 번에 정리하고 싶을 땐
+// Actions에서 수동 실행하며 max_per_site 입력값(MAX_PER_SITE)을 크게 주면 된다.
+const MAX_PER_SITE = parseInt(process.env.MAX_PER_SITE, 10) || 10;
 
 const config = JSON.parse(fs.readFileSync(CONFIG_PATH, 'utf8'));
 let seen = [];
@@ -108,7 +111,7 @@ async function scrapeSite(site, keywords){
     const k = dedupKey(f.url);
     if(!s.has(k)){ s.add(k); uniq.push(f); }
   }
-  return uniq.slice(0, 10);
+  return uniq.slice(0, MAX_PER_SITE);
 }
 
 async function sendNtfyNotification(item){

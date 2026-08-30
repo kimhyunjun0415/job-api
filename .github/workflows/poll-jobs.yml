@@ -5,7 +5,12 @@ on:
     # 30분마다, 단 한국시간(KST, UTC+9) 09:00~24:00에만 실행.
     # UTC 0~14시 = KST 09:00~23:59 (KST 00:00~09:00은 조용히 쉼)
     - cron: '*/30 0-14 * * *'
-  workflow_dispatch: {}
+  workflow_dispatch:
+    inputs:
+      max_per_site:
+        description: '사이트당 이번 실행에서 보낼 최대 알림 수 (한 번에 밀린 걸 다 정리하고 싶으면 크게, 예: 999)'
+        required: false
+        default: '10'
 
 permissions:
   contents: write
@@ -31,6 +36,7 @@ jobs:
       - name: Run job scraper
         env:
           NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
+          MAX_PER_SITE: ${{ github.event.inputs.max_per_site || '10' }}
         run: node scripts/fetch-jobs.js
 
       - name: Commit seen.json
