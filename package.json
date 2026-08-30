@@ -4,5 +4,5 @@
   "description": "Scrapes job sites and sends OneSignal notifications",
   "main": "scripts/fetch-jobs.js",
   "scripts": { "start": "node scripts/fetch-jobs.js" },
-  "dependencies": { "cheerio": "^1.0.0-rc.12" }
+  "dependencies": { "cheerio": "^1.0.0-rc.12", "node-fetch": "^3.3.2" }
 }

@@ -2,10 +2,18 @@ const fs = require('fs');
 const path = require('path');
 const cheerio = require('cheerio');
 
-// Use global fetch (Node 18+ on Actions)
-if (typeof fetch === 'undefined') {
-  console.error('fetch is not available in this Node runtime. Use Node 18+.');
-  process.exit(1);
+// --- fetch 폴백 처리 (Node 환경에서 global.fetch가 없을 때 node-fetch 사용) ---
+async function ensureFetchAvailable() {
+  if (typeof fetch !== 'undefined') return;
+  try {
+    const mod = await import('node-fetch');
+    // node-fetch default export 함수 할당
+    global.fetch = mod.default || mod;
+    console.log('Using node-fetch polyfill for fetch');
+  } catch (e) {
+    console.error('fetch is not available and node-fetch failed to load:', e.message);
+    process.exit(1);
+  }
 }
 
 const CONFIG_PATH = path.join(__dirname, 'config.json');
@@ -109,6 +117,8 @@ async function sendOneSignalNotification(item){
 }
 
 (async ()=>{
+  await ensureFetchAvailable();
+
   const keywords = config.keywords || ['차량 랩핑','PPF'];
   const sites = config.sites || [];
   const allNew = [];
