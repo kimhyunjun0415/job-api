@@ -114,7 +114,7 @@ function dedupKey(urlStr){
   }
 })();
 
-async function scrapeSite(site, keywords, requiredKeywords){
+async function scrapeSite(site, keywords, requiredKeywords, excludeKeywords){
   if(!site.urlTpl){ console.log(`Skipping ${site.name} (no URL template)`); return []; }
   const found = [];
   for(const kw of keywords){
@@ -143,7 +143,10 @@ async function scrapeSite(site, keywords, requiredKeywords){
       // requiredKeywords(예: "신입")는 매칭된 키워드와 별개로 텍스트에 전부 같이
       // 있어야만 통과한다 (검색어 자체에 합치면 결과가 너무 좁아져서 못 씀).
       const matchesRequired = requiredKeywords.every(rk => textLower.includes(rk.toLowerCase()));
-      if(matchesKw && matchesRequired){
+      // excludeKeywords(예: "물류", "가공")가 하나라도 있으면 키워드가 매칭됐어도 제외한다.
+      // ("랩핑" 등이 물류 포장/금속 가공 같은 무관한 공고에도 나오는 걸 걸러내는 용도.)
+      const matchesExclude = excludeKeywords.some(ek => textLower.includes(ek.toLowerCase()));
+      if(matchesKw && matchesRequired && !matchesExclude){
         found.push({ title: text.replace(/\s+/g,' '), url: full, site: site.name });
       }
     });
@@ -195,11 +198,12 @@ async function sendNtfyNotification(item){
 
   const keywords = config.keywords || ['차량 랩핑','PPF'];
   const requiredKeywords = config.requiredKeywords || [];
+  const excludeKeywords = config.excludeKeywords || [];
   const sites = config.sites || [];
   const allNew = [];
   for(const site of sites){
     try{
-      const items = await scrapeSite(site, keywords, requiredKeywords);
+      const items = await scrapeSite(site, keywords, requiredKeywords, excludeKeywords);
       console.log(`Found ${items.length} candidate(s) on ${site.name}`);
       for(const it of items){
         if(seenSet.has(dedupKey(it.url))) continue;
