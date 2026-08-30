@@ -1,3 +1,9 @@
+// Node 18 환경엔 File 전역이 없는데, undici(cheerio/node-fetch 의존성)가 모듈 로드 시점에
+// 이를 참조해서 즉시 크래시하는 경우가 있어 미리 채워둔다. (Node 20+는 이미 전역에 있어 no-op)
+if (typeof File === 'undefined') {
+  global.File = require('buffer').File;
+}
+
 const fs = require('fs');
 const path = require('path');
 const cheerio = require('cheerio');
