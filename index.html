@@ -34,13 +34,6 @@
   .section:last-child{padding-bottom:20px;}
   .label{display:flex;align-items:center;gap:6px;color:var(--text-dim);font-size:10.5px;
     letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px;}
-  .site-card{display:flex;justify-content:space-between;align-items:center;background:var(--surface);
-    border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:10px;text-decoration:none;color:inherit;}
-  .site-name{display:flex;align-items:center;gap:6px;font-weight:600;font-size:14px;}
-  .badge{font-family:'JetBrains Mono',monospace;font-size:9px;padding:2px 6px;border-radius:999px;border:1px solid var(--line);color:var(--text-mute);}
-  .badge.direct{color:var(--accent);border-color:rgba(143,168,184,.3);background:rgba(143,168,184,.1);}
-  .site-note{font-size:11.5px;color:var(--text-mute);margin:3px 0 0;}
-  .site-arrow{color:var(--text-mute);font-size:14px;}
   .kw-preset-row{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;}
   .kw-preset{font-size:12px;padding:5px 11px;border-radius:999px;background:rgba(255,255,255,.05);
     color:var(--text-dim);border:1px solid var(--line);cursor:pointer;}
@@ -50,6 +43,34 @@
     padding:8px 10px;font-size:12.5px;color:var(--text);outline:none;}
   .kw-custom-btn{font-family:'JetBrains Mono',monospace;font-size:11.5px;padding:0 14px;border-radius:8px;
     background:rgba(143,168,184,.18);color:var(--accent);border:1px solid rgba(143,168,184,.3);cursor:pointer;}
+  .site-tabbar{display:flex;gap:6px;overflow-x:auto;padding-bottom:10px;margin-bottom:10px;
+    border-bottom:1px solid var(--line);}
+  .site-tabbar::-webkit-scrollbar{display:none;}
+  .site-tab{flex:0 0 auto;font-family:'Inter',sans-serif;font-size:12px;padding:6px 12px;border-radius:999px;
+    background:rgba(255,255,255,.05);color:var(--text-dim);border:1px solid var(--line);cursor:pointer;white-space:nowrap;}
+  .site-tab.active{background:rgba(143,168,184,.18);color:var(--accent);border-color:rgba(143,168,184,.35);}
+  .frame-wrap{position:relative;width:100%;height:62vh;min-height:420px;border-radius:12px;overflow:hidden;
+    border:1px solid var(--line);background:var(--surface);}
+  .frame-wrap.expanded{position:fixed;inset:0;z-index:100;height:100vh;min-height:0;border-radius:0;
+    max-width:none;}
+  .frame-expand-btn{position:absolute;top:8px;right:8px;z-index:2;width:32px;height:32px;border-radius:8px;
+    background:rgba(15,16,19,.85);color:var(--text);border:1px solid var(--line);font-size:15px;
+    display:flex;align-items:center;justify-content:center;cursor:pointer;backdrop-filter:blur(4px);}
+  .frame-status{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+    font-size:12.5px;color:var(--text-mute);z-index:1;}
+  .site-frame{width:100%;height:100%;border:none;display:none;background:#fff;}
+  .frame-fallback{position:absolute;inset:0;display:none;flex-direction:column;align-items:center;
+    justify-content:center;gap:12px;text-decoration:none;padding:24px;text-align:center;}
+  .frame-fallback span:first-child{font-size:13px;color:var(--text-dim);line-height:1.5;}
+  .frame-fallback-btn{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--yellow);
+    border:1px solid rgba(245,194,66,.35);background:rgba(245,194,66,.1);padding:8px 16px;border-radius:999px;}
+  .site-card{display:flex;justify-content:space-between;align-items:center;background:var(--surface);
+    border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:10px;text-decoration:none;color:inherit;}
+  .site-name{display:flex;align-items:center;gap:6px;font-weight:600;font-size:14px;}
+  .badge{font-family:'JetBrains Mono',monospace;font-size:9px;padding:2px 6px;border-radius:999px;border:1px solid var(--line);color:var(--text-mute);}
+  .badge.direct{color:var(--accent);border-color:rgba(143,168,184,.3);background:rgba(143,168,184,.1);}
+  .site-note{font-size:11.5px;color:var(--text-mute);margin:3px 0 0;}
+  .site-arrow{color:var(--text-mute);font-size:14px;}
 </style>
 </head>
 <body>
@@ -63,7 +84,7 @@
   </header>
 
   <div class="banner">
-    <p>검색어를 고르고 원하는 사이트를 누르면 새 탭에서 최신 공고를 바로 확인할 수 있어요.</p>
+    <p>검색어를 고르면 사람인·잡코리아는 아래 화면에 바로 뜨고, 나머지 사이트는 눌러서 새 탭으로 열 수 있어요.</p>
   </div>
 
   <div class="section">
@@ -76,25 +97,44 @@
   </div>
 
   <div class="section">
+    <div class="label">🖥️ 미리보기</div>
+    <div class="site-tabbar" id="siteTabbar"></div>
+    <div class="frame-wrap" id="frameWrap">
+      <button class="frame-expand-btn" id="frameExpandBtn" title="전체화면으로 보기">⤢</button>
+      <div class="frame-status" id="frameStatus">불러오는 중…</div>
+      <iframe id="siteFrame" class="site-frame" title="site preview"></iframe>
+      <a id="frameFallback" class="frame-fallback" target="_blank" rel="noopener noreferrer" style="display:none;">
+        <span>⚠️ 이 사이트는 화면 안에 표시할 수 없어요</span>
+        <span class="frame-fallback-btn">새 탭에서 열기 ↗</span>
+      </a>
+    </div>
+  </div>
+
+  <div class="section">
     <div class="label">📌 바로가기</div>
     <div id="siteList"></div>
   </div>
 </div>
 
 <script>
+// 사람인/잡코리아만 X-Frame-Options 차단이 없어 화면 안에 바로 표시 가능. 나머지는 새 탭으로 연다.
+const previewSites = [
+  {name:"사람인", urlTpl:"https://www.saramin.co.kr/zf_user/search/recruit?searchword={kw}", direct:true},
+  {name:"잡코리아", urlTpl:"https://www.jobkorea.co.kr/Search/?stext={kw}", direct:true},
+];
+
 const sites = [
-  {name:"사람인", note:"검색 결과 바로 표시", urlTpl:"https://www.saramin.co.kr/zf_user/search/recruit?searchword={kw}", direct:true},
-  {name:"잡코리아", note:"검색 결과 바로 표시", urlTpl:"https://www.jobkorea.co.kr/Search/?stext={kw}", direct:true},
-  {name:"알바몬", note:"검색 결과 바로 표시", urlTpl:"https://www.albamon.com/jobs/search?keyword={kw}", direct:true},
+  {name:"알바몬", note:"검색 결과 바로 표시", urlTpl:"https://www.albamon.com/total-search?keyword={kw}", direct:true},
   {name:"원티드", note:"검색 결과 바로 표시", urlTpl:"https://www.wanted.co.kr/search?query={kw}", direct:true},
   {name:"알바천국", note:"홈에서 직접 검색 필요", urlTpl:null, url:"https://www.alba.co.kr/", direct:false},
   {name:"인크루트", note:"홈에서 직접 검색 필요", urlTpl:null, url:"https://www.incruit.com/", direct:false},
-  {name:"고용24 (고용노동부)", note:"홈에서 직접 검색 필요", urlTpl:null, url:"https://www.work24.go.kr/", direct:false},
+  {name:"고용24 (고용노동부)", note:"직업찾기 화면 바로 표시", urlTpl:null, url:"https://www.work24.go.kr/wk/a/b/1200/retriveDtlEmpSrchList.do", direct:false},
   {name:"당근 알바", note:"홈에서 직접 검색 필요", urlTpl:null, url:"https://www.daangn.com/kr/jobs/", direct:false},
 ];
 
 const KEYWORD_PRESETS = ["차량랩핑", "랩핑", "PPF", "랩핑,PPF", "차량랩핑,PPF"];
 let currentKw = KEYWORD_PRESETS[0];
+let currentPreviewIndex = 0;
 
 function siteUrl(site, kw){
   if(!site.direct || !site.urlTpl) return site.url;
@@ -110,6 +150,7 @@ function renderKwPresets(){
       currentKw = btn.dataset.k;
       renderKwPresets();
       renderSites();
+      loadPreview(previewSites[currentPreviewIndex]);
     });
   });
 }
@@ -120,6 +161,7 @@ function applyCustomKw(){
   currentKw = v;
   renderKwPresets();
   renderSites();
+  loadPreview(previewSites[currentPreviewIndex]);
 }
 
 function renderSites(){
@@ -133,8 +175,68 @@ function renderSites(){
     </a>`).join("");
 }
 
+function toggleExpand(){
+  const wrap = document.getElementById("frameWrap");
+  const btn = document.getElementById("frameExpandBtn");
+  const expanded = wrap.classList.toggle("expanded");
+  btn.textContent = expanded ? "✕" : "⤢";
+  btn.title = expanded ? "닫기" : "전체화면으로 보기";
+}
+
+function loadPreview(site){
+  const status = document.getElementById("frameStatus");
+  const frame = document.getElementById("siteFrame");
+  const fallback = document.getElementById("frameFallback");
+  const url = siteUrl(site, currentKw);
+  status.style.display = "flex";
+  status.textContent = "불러오는 중…";
+  frame.style.display = "none";
+  fallback.style.display = "none";
+  fallback.href = url;
+  frame.src = url;
+
+  const check = setTimeout(() => {
+    try{
+      const blocked = frame.contentWindow.location.href === "about:blank";
+      if(blocked){
+        status.style.display = "none";
+        frame.style.display = "none";
+        fallback.style.display = "flex";
+      } else {
+        status.style.display = "none";
+        frame.style.display = "block";
+      }
+    }catch(e){
+      status.style.display = "none";
+      frame.style.display = "block";
+    }
+  }, 2200);
+
+  frame.onload = () => {
+    clearTimeout(check);
+    try{
+      if(frame.contentWindow.location.href === "about:blank") return;
+    }catch(e){}
+    status.style.display = "none";
+    frame.style.display = "block";
+  };
+}
+
+document.getElementById("frameExpandBtn").addEventListener("click", toggleExpand);
+document.getElementById("siteTabbar").innerHTML = previewSites.map((s,i) =>
+  `<button class="site-tab ${i===currentPreviewIndex?'active':''}" data-i="${i}">${s.name}</button>`
+).join("");
+document.getElementById("siteTabbar").addEventListener("click", (e) => {
+  const btn = e.target.closest(".site-tab");
+  if(!btn) return;
+  currentPreviewIndex = +btn.dataset.i;
+  document.querySelectorAll(".site-tab").forEach(t=>t.classList.toggle("active", t===btn));
+  loadPreview(previewSites[currentPreviewIndex]);
+});
+
 renderKwPresets();
 renderSites();
+loadPreview(previewSites[currentPreviewIndex]);
 
 if("serviceWorker" in navigator){
   window.addEventListener("load", () => {
