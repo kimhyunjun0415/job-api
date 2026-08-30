@@ -80,8 +80,13 @@
   .site-tab{flex:0 0 auto;font-family:'Inter',sans-serif;font-size:12px;padding:6px 12px;border-radius:999px;
     background:rgba(255,255,255,.05);color:var(--text-dim);border:1px solid var(--line);cursor:pointer;white-space:nowrap;}
   .site-tab.active{background:rgba(143,168,184,.18);color:var(--accent);border-color:rgba(143,168,184,.35);}
-  .frame-wrap{position:relative;width:100%;height:420px;border-radius:12px;overflow:hidden;
+  .frame-wrap{position:relative;width:100%;height:62vh;min-height:420px;border-radius:12px;overflow:hidden;
     border:1px solid var(--line);background:var(--surface);}
+  .frame-wrap.expanded{position:fixed;inset:0;z-index:100;height:100vh;min-height:0;border-radius:0;
+    max-width:none;}
+  .frame-expand-btn{position:absolute;top:8px;right:8px;z-index:2;width:32px;height:32px;border-radius:8px;
+    background:rgba(15,16,19,.85);color:var(--text);border:1px solid var(--line);font-size:15px;
+    display:flex;align-items:center;justify-content:center;cursor:pointer;backdrop-filter:blur(4px);}
   .frame-status{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
     font-size:12.5px;color:var(--text-mute);z-index:1;}
   .site-frame{width:100%;height:100%;border:none;display:none;background:#fff;}
@@ -215,6 +220,7 @@ function renderContent(){
       </div>
       <div class="site-tabbar" id="siteTabbar"></div>
       <div class="frame-wrap" id="frameWrap">
+        <button class="frame-expand-btn" id="frameExpandBtn" title="전체화면으로 보기">⤢</button>
         <div class="frame-status" id="frameStatus">불러오는 중…</div>
         <iframe id="siteFrame" class="site-frame" title="site preview"></iframe>
         <a id="frameFallback" class="frame-fallback" target="_blank" rel="noopener noreferrer" style="display:none;">
@@ -223,6 +229,7 @@ function renderContent(){
         </a>
       </div>`;
     renderKwPresets();
+    document.getElementById("frameExpandBtn").addEventListener("click", toggleExpand);
     document.getElementById("siteTabbar").innerHTML = sites.map((s,i) =>
       `<button class="site-tab ${i===currentSiteIndex?'active':''}" data-i="${i}">${s.name}</button>`
     ).join("");
@@ -268,6 +275,14 @@ function applyCustomKw(){
   currentKw = v;
   renderKwPresets();
   loadSite(sites[currentSiteIndex]);
+}
+
+function toggleExpand(){
+  const wrap = document.getElementById("frameWrap");
+  const btn = document.getElementById("frameExpandBtn");
+  const expanded = wrap.classList.toggle("expanded");
+  btn.textContent = expanded ? "✕" : "⤢";
+  btn.title = expanded ? "닫기" : "전체화면으로 보기";
 }
 
 function loadSite(site){
