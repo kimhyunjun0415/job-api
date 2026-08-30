@@ -143,11 +143,12 @@
 // 안 깨져서, iframe을 1100px 폭으로 띄운 뒤 화면 폭에 맞게 축소(scale)해서 보여준다.
 const previewSites = [
   {name:"사람인", urlTpl:"https://www.saramin.co.kr/zf_user/search/recruit?searchword={kw}"},
-  {name:"잡코리아", urlTpl:"https://www.jobkorea.co.kr/Search/?stext={kw}", nativeWidth:1100, nativeHeight:1700},
 ];
 
-// 검색어를 URL에 실어서 결과가 바로 열리는 사이트 (새 탭)
+// 검색어를 URL에 실어서 결과가 바로 열리는 사이트 (새 탭 - 화면을 꽉 채워서 열리니 잡코리아처럼
+// 좁은 iframe에서 레이아웃이 깨지던 사이트도 문제 없음)
 const directSites = [
+  {name:"잡코리아", urlTpl:"https://www.jobkorea.co.kr/Search/?stext={kw}"},
   {name:"알바몬", urlTpl:"https://www.albamon.com/total-search?keyword={kw}"},
   {name:"원티드", urlTpl:"https://www.wanted.co.kr/search?query={kw}"},
 ];
