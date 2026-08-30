@@ -1,0 +1,9 @@
+{
+  "keywords": ["차량 랩핑", "PPF"],
+  "sites": [
+    { "name": "사람인", "urlTpl": "https://www.saramin.co.kr/zf_user/search/recruit?searchword={kw}" },
+    { "name": "잡코리아", "urlTpl": "https://www.jobkorea.co.kr/Search/?stext={kw}" },
+    { "name": "알바몬", "urlTpl": "https://www.albamon.com/total-search?keyword={kw}" },
+    { "name": "원티드", "urlTpl": "https://www.wanted.co.kr/search?query={kw}" }
+  ]
+}

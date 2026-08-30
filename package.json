@@ -1,0 +1,8 @@
+{
+  "name": "job-api-scraper",
+  "version": "1.0.0",
+  "description": "Scrapes job sites and sends ntfy notifications",
+  "main": "scripts/fetch-jobs.js",
+  "scripts": { "start": "node scripts/fetch-jobs.js" },
+  "dependencies": { "cheerio": "^1.0.0-rc.12", "node-fetch": "^3.3.2" }
+}
