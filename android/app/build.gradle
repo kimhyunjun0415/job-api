@@ -24,6 +24,13 @@ android {
     }
 }
 
+configurations.all {
+    // appcompat이 끌어오는 구버전 kotlin-stdlib-jdk7/jdk8가 최신 kotlin-stdlib(1.8+)와
+    // 클래스가 중복돼서 빌드가 깨진다. jdk7/8 확장은 이미 kotlin-stdlib 본체에 합쳐졌으니 제외.
+    exclude group: 'org.jetbrains.kotlin', module: 'kotlin-stdlib-jdk7'
+    exclude group: 'org.jetbrains.kotlin', module: 'kotlin-stdlib-jdk8'
+}
+
 dependencies {
     implementation 'androidx.appcompat:appcompat:1.7.0'
 }
