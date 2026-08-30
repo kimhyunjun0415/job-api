@@ -1,11 +1,11 @@
 {
-  "name": "랩핑잡",
-  "short_name": "랩핑잡",
+  "name": "실시간 구인 불러오기",
+  "short_name": "구인 불러오기",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
-  "background_color": "#14161A",
-  "theme_color": "#14161A",
+  "background_color": "#FFFFFF",
+  "theme_color": "#FFFFFF",
   "icons": [
     { "src": "icon-192.png", "sizes": "192x192", "type": "image/png" },
     { "src": "icon-512.png", "sizes": "512x512", "type": "image/png" }
