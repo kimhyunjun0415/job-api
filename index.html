@@ -43,12 +43,6 @@
     padding:8px 10px;font-size:12.5px;color:var(--text);outline:none;}
   .kw-custom-btn{font-family:'JetBrains Mono',monospace;font-size:11.5px;padding:0 14px;border-radius:8px;
     background:rgba(143,168,184,.18);color:var(--accent);border:1px solid rgba(143,168,184,.3);cursor:pointer;}
-  .site-tabbar{display:flex;gap:6px;overflow-x:auto;padding-bottom:10px;margin-bottom:10px;
-    border-bottom:1px solid var(--line);}
-  .site-tabbar::-webkit-scrollbar{display:none;}
-  .site-tab{flex:0 0 auto;font-family:'Inter',sans-serif;font-size:12px;padding:6px 12px;border-radius:999px;
-    background:rgba(255,255,255,.05);color:var(--text-dim);border:1px solid var(--line);cursor:pointer;white-space:nowrap;}
-  .site-tab.active{background:rgba(143,168,184,.18);color:var(--accent);border-color:rgba(143,168,184,.35);}
   .frame-wrap{position:relative;width:100%;height:62vh;min-height:420px;border-radius:12px;overflow:hidden;
     border:1px solid var(--line);background:var(--surface);}
   .frame-wrap.expanded{position:fixed;inset:0;z-index:100;height:100vh;min-height:0;border-radius:0;
@@ -71,6 +65,12 @@
   .badge.direct{color:var(--accent);border-color:rgba(143,168,184,.3);background:rgba(143,168,184,.1);}
   .site-note{font-size:11.5px;color:var(--text-mute);margin:3px 0 0;}
   .site-arrow{color:var(--text-mute);font-size:14px;}
+  .home-actions{display:flex;align-items:center;gap:8px;flex-shrink:0;}
+  .copy-btn{font-family:'JetBrains Mono',monospace;font-size:11px;padding:6px 10px;border-radius:8px;
+    background:rgba(143,168,184,.18);color:var(--accent);border:1px solid rgba(143,168,184,.3);cursor:pointer;
+    white-space:nowrap;}
+  .copy-btn.copied{background:rgba(245,194,66,.15);color:var(--yellow);border-color:rgba(245,194,66,.3);}
+  .home-open{color:var(--text-mute);font-size:14px;text-decoration:none;padding:4px;}
 </style>
 </head>
 <body>
@@ -84,7 +84,7 @@
   </header>
 
   <div class="banner">
-    <p>검색어를 고르면 사람인·잡코리아는 아래 화면에 바로 뜨고, 나머지 사이트는 눌러서 새 탭으로 열 수 있어요.</p>
+    <p>검색어를 고르면 사람인은 아래 화면에 바로 뜨고, 바로검색 사이트는 새 탭에서 결과가 바로 열려요. 홈 사이트는 검색어를 복사해서 붙여넣으면 돼요.</p>
   </div>
 
   <div class="section">
@@ -97,8 +97,7 @@
   </div>
 
   <div class="section">
-    <div class="label">🖥️ 미리보기</div>
-    <div class="site-tabbar" id="siteTabbar"></div>
+    <div class="label">🖥️ 미리보기 · 사람인</div>
     <div class="frame-wrap" id="frameWrap">
       <button class="frame-expand-btn" id="frameExpandBtn" title="전체화면으로 보기">⤢</button>
       <div class="frame-status" id="frameStatus">불러오는 중…</div>
@@ -111,34 +110,40 @@
   </div>
 
   <div class="section">
-    <div class="label">📌 바로가기</div>
-    <div id="siteList"></div>
+    <div class="label">📌 바로검색 (새 탭)</div>
+    <div id="directList"></div>
+  </div>
+
+  <div class="section">
+    <div class="label">🔗 홈에서 검색 (새 탭)</div>
+    <div id="homeList"></div>
   </div>
 </div>
 
 <script>
-// 사람인/잡코리아만 X-Frame-Options 차단이 없어 화면 안에 바로 표시 가능. 나머지는 새 탭으로 연다.
-const previewSites = [
-  {name:"사람인", urlTpl:"https://www.saramin.co.kr/zf_user/search/recruit?searchword={kw}", direct:true},
-  {name:"잡코리아", urlTpl:"https://www.jobkorea.co.kr/Search/?stext={kw}", direct:true},
+// 사람인만 좁은 화면(iframe)에서도 레이아웃이 깨지지 않아 화면 안에 바로 표시.
+const previewSite = {name:"사람인", urlTpl:"https://www.saramin.co.kr/zf_user/search/recruit?searchword={kw}"};
+
+// 검색어를 URL에 실어서 결과가 바로 열리는 사이트 (새 탭 - 화면 폭이 좁으면 레이아웃이 깨지는 곳도 있어 새 탭으로 연다)
+const directSites = [
+  {name:"잡코리아", urlTpl:"https://www.jobkorea.co.kr/Search/?stext={kw}"},
+  {name:"알바몬", urlTpl:"https://www.albamon.com/total-search?keyword={kw}"},
+  {name:"원티드", urlTpl:"https://www.wanted.co.kr/search?query={kw}"},
 ];
 
-const sites = [
-  {name:"알바몬", note:"검색 결과 바로 표시", urlTpl:"https://www.albamon.com/total-search?keyword={kw}", direct:true},
-  {name:"원티드", note:"검색 결과 바로 표시", urlTpl:"https://www.wanted.co.kr/search?query={kw}", direct:true},
-  {name:"알바천국", note:"홈에서 직접 검색 필요", urlTpl:null, url:"https://www.alba.co.kr/", direct:false},
-  {name:"인크루트", note:"홈에서 직접 검색 필요", urlTpl:null, url:"https://www.incruit.com/", direct:false},
-  {name:"고용24 (고용노동부)", note:"직업찾기 화면 바로 표시", urlTpl:null, url:"https://www.work24.go.kr/wk/a/b/1200/retriveDtlEmpSrchList.do", direct:false},
-  {name:"당근 알바", note:"홈에서 직접 검색 필요", urlTpl:null, url:"https://www.daangn.com/kr/jobs/", direct:false},
+// 검색어를 URL로 넘길 방법이 없어 사이트 안에서 직접 검색해야 하는 곳 (검색어 복사 버튼 제공)
+const homeSites = [
+  {name:"알바천국", url:"https://www.alba.co.kr/"},
+  {name:"인크루트", url:"https://www.incruit.com/"},
+  {name:"고용24 (고용노동부)", url:"https://www.work24.go.kr/wk/a/b/1200/retriveDtlEmpSrchList.do"},
+  {name:"당근 알바", url:"https://www.daangn.com/kr/jobs/"},
 ];
 
 const KEYWORD_PRESETS = ["차량랩핑", "랩핑", "PPF", "랩핑,PPF", "차량랩핑,PPF"];
 let currentKw = KEYWORD_PRESETS[0];
-let currentPreviewIndex = 0;
 
-function siteUrl(site, kw){
-  if(!site.direct || !site.urlTpl) return site.url;
-  return site.urlTpl.replace("{kw}", encodeURIComponent(kw));
+function fillKw(urlTpl, kw){
+  return urlTpl.replace("{kw}", encodeURIComponent(kw));
 }
 
 function renderKwPresets(){
@@ -148,9 +153,7 @@ function renderKwPresets(){
   document.getElementById("kwPresetRow").querySelectorAll(".kw-preset").forEach(btn => {
     btn.addEventListener("click", () => {
       currentKw = btn.dataset.k;
-      renderKwPresets();
-      renderSites();
-      loadPreview(previewSites[currentPreviewIndex]);
+      refreshAll();
     });
   });
 }
@@ -159,20 +162,49 @@ function applyCustomKw(){
   const v = document.getElementById("kwCustomInput").value.trim();
   if(!v) return;
   currentKw = v;
-  renderKwPresets();
-  renderSites();
-  loadPreview(previewSites[currentPreviewIndex]);
+  refreshAll();
 }
 
-function renderSites(){
-  document.getElementById("siteList").innerHTML = sites.map(s => `
-    <a class="site-card" href="${siteUrl(s, currentKw)}" target="_blank" rel="noopener noreferrer">
+function refreshAll(){
+  renderKwPresets();
+  renderDirectList();
+  renderHomeList();
+  loadPreview();
+}
+
+function renderDirectList(){
+  document.getElementById("directList").innerHTML = directSites.map(s => `
+    <a class="site-card" href="${fillKw(s.urlTpl, currentKw)}" target="_blank" rel="noopener noreferrer">
       <div>
-        <div class="site-name">${s.name} <span class="badge ${s.direct?'direct':''}">${s.direct?'바로검색':'홈'}</span></div>
-        <p class="site-note">${s.note}</p>
+        <div class="site-name">${s.name} <span class="badge direct">바로검색</span></div>
+        <p class="site-note">검색 결과 바로 표시</p>
       </div>
       <span class="site-arrow">↗</span>
     </a>`).join("");
+}
+
+function renderHomeList(){
+  document.getElementById("homeList").innerHTML = homeSites.map((s,i) => `
+    <div class="site-card">
+      <div>
+        <div class="site-name">${s.name} <span class="badge">홈</span></div>
+        <p class="site-note">"${currentKw}" 복사해서 검색해보세요</p>
+      </div>
+      <div class="home-actions">
+        <button class="copy-btn" data-i="${i}">복사</button>
+        <a class="home-open" href="${s.url}" target="_blank" rel="noopener noreferrer">↗</a>
+      </div>
+    </div>`).join("");
+  document.getElementById("homeList").querySelectorAll(".copy-btn").forEach(btn => {
+    btn.addEventListener("click", async () => {
+      try{
+        await navigator.clipboard.writeText(currentKw);
+        btn.textContent = "복사됨";
+        btn.classList.add("copied");
+        setTimeout(() => { btn.textContent = "복사"; btn.classList.remove("copied"); }, 1200);
+      }catch(e){}
+    });
+  });
 }
 
 function toggleExpand(){
@@ -183,11 +215,11 @@ function toggleExpand(){
   btn.title = expanded ? "닫기" : "전체화면으로 보기";
 }
 
-function loadPreview(site){
+function loadPreview(){
   const status = document.getElementById("frameStatus");
   const frame = document.getElementById("siteFrame");
   const fallback = document.getElementById("frameFallback");
-  const url = siteUrl(site, currentKw);
+  const url = fillKw(previewSite.urlTpl, currentKw);
   status.style.display = "flex";
   status.textContent = "불러오는 중…";
   frame.style.display = "none";
@@ -223,20 +255,11 @@ function loadPreview(site){
 }
 
 document.getElementById("frameExpandBtn").addEventListener("click", toggleExpand);
-document.getElementById("siteTabbar").innerHTML = previewSites.map((s,i) =>
-  `<button class="site-tab ${i===currentPreviewIndex?'active':''}" data-i="${i}">${s.name}</button>`
-).join("");
-document.getElementById("siteTabbar").addEventListener("click", (e) => {
-  const btn = e.target.closest(".site-tab");
-  if(!btn) return;
-  currentPreviewIndex = +btn.dataset.i;
-  document.querySelectorAll(".site-tab").forEach(t=>t.classList.toggle("active", t===btn));
-  loadPreview(previewSites[currentPreviewIndex]);
-});
 
 renderKwPresets();
-renderSites();
-loadPreview(previewSites[currentPreviewIndex]);
+renderDirectList();
+renderHomeList();
+loadPreview();
 
 if("serviceWorker" in navigator){
   window.addEventListener("load", () => {
