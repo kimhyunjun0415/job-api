@@ -114,7 +114,7 @@ function dedupKey(urlStr){
   }
 })();
 
-async function scrapeSite(site, keywords){
+async function scrapeSite(site, keywords, requiredKeywords){
   if(!site.urlTpl){ console.log(`Skipping ${site.name} (no URL template)`); return []; }
   const found = [];
   for(const kw of keywords){
@@ -140,7 +140,10 @@ async function scrapeSite(site, keywords){
       // 전혀 상관없는 메뉴·배너 링크까지 잡아서 쓸데없는 알림의 원인이었다.)
       const textLower = text.toLowerCase();
       const matchesKw = keywords.some(k => textLower.includes(k.replace(/\s+/g,'').toLowerCase()) || textLower.includes(k.toLowerCase()));
-      if(matchesKw){
+      // requiredKeywords(예: "신입")는 매칭된 키워드와 별개로 텍스트에 전부 같이
+      // 있어야만 통과한다 (검색어 자체에 합치면 결과가 너무 좁아져서 못 씀).
+      const matchesRequired = requiredKeywords.every(rk => textLower.includes(rk.toLowerCase()));
+      if(matchesKw && matchesRequired){
         found.push({ title: text.replace(/\s+/g,' '), url: full, site: site.name });
       }
     });
@@ -191,11 +194,12 @@ async function sendNtfyNotification(item){
   await ensureFetchAvailable();
 
   const keywords = config.keywords || ['차량 랩핑','PPF'];
+  const requiredKeywords = config.requiredKeywords || [];
   const sites = config.sites || [];
   const allNew = [];
   for(const site of sites){
     try{
-      const items = await scrapeSite(site, keywords);
+      const items = await scrapeSite(site, keywords, requiredKeywords);
       console.log(`Found ${items.length} candidate(s) on ${site.name}`);
       for(const it of items){
         if(seenSet.has(dedupKey(it.url))) continue;
