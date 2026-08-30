@@ -31,7 +31,6 @@
     border:1px solid rgba(143,168,184,.25);border-radius:10px;padding:10px 12px;}
   .banner p{margin:0;font-size:11.5px;color:var(--accent);line-height:1.5;}
   .section{padding:16px 20px 0;}
-  .section:last-child{padding-bottom:20px;}
   .label{display:flex;align-items:center;gap:6px;color:var(--text-dim);font-size:10.5px;
     letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px;}
   .kw-preset-row{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;}
@@ -43,6 +42,18 @@
     padding:8px 10px;font-size:12.5px;color:var(--text);outline:none;}
   .kw-custom-btn{font-family:'JetBrains Mono',monospace;font-size:11.5px;padding:0 14px;border-radius:8px;
     background:rgba(143,168,184,.18);color:var(--accent);border:1px solid rgba(143,168,184,.3);cursor:pointer;}
+  .tabs{display:flex;gap:20px;padding:0 20px;margin-top:18px;border-bottom:1px solid var(--line);}
+  .tab{background:none;border:none;color:var(--text-mute);font-family:'Oswald',sans-serif;
+    font-size:13px;letter-spacing:.02em;padding-bottom:12px;border-bottom:2px solid transparent;cursor:pointer;}
+  .tab.active{color:var(--text);border-bottom-color:var(--accent);}
+  .panel{display:none;padding:16px 20px 24px;}
+  .panel.active{display:block;}
+  .site-tabbar{display:flex;gap:6px;overflow-x:auto;padding-bottom:10px;margin-bottom:10px;
+    border-bottom:1px solid var(--line);}
+  .site-tabbar::-webkit-scrollbar{display:none;}
+  .site-tab{flex:0 0 auto;font-family:'Inter',sans-serif;font-size:12px;padding:6px 12px;border-radius:999px;
+    background:rgba(255,255,255,.05);color:var(--text-dim);border:1px solid var(--line);cursor:pointer;white-space:nowrap;}
+  .site-tab.active{background:rgba(143,168,184,.18);color:var(--accent);border-color:rgba(143,168,184,.35);}
   .frame-wrap{position:relative;width:100%;height:62vh;min-height:420px;border-radius:12px;overflow:hidden;
     border:1px solid var(--line);background:var(--surface);}
   .frame-wrap.expanded{position:fixed;inset:0;z-index:100;height:100vh;min-height:0;border-radius:0;
@@ -52,7 +63,8 @@
     display:flex;align-items:center;justify-content:center;cursor:pointer;backdrop-filter:blur(4px);}
   .frame-status{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
     font-size:12.5px;color:var(--text-mute);z-index:1;}
-  .site-frame{width:100%;height:100%;border:none;display:none;background:#fff;}
+  .frame-scroll{position:absolute;inset:0;overflow:auto;display:none;}
+  .site-frame{border:none;background:#fff;display:block;transform-origin:top left;}
   .frame-fallback{position:absolute;inset:0;display:none;flex-direction:column;align-items:center;
     justify-content:center;gap:12px;text-decoration:none;padding:24px;text-align:center;}
   .frame-fallback span:first-child{font-size:13px;color:var(--text-dim);line-height:1.5;}
@@ -84,7 +96,7 @@
   </header>
 
   <div class="banner">
-    <p>검색어를 고르면 사람인은 아래 화면에 바로 뜨고, 바로검색 사이트는 새 탭에서 결과가 바로 열려요. 홈 사이트는 검색어를 복사해서 붙여넣으면 돼요.</p>
+    <p>검색어를 고르면 아래 세 탭이 모두 갱신돼요. 미리보기는 화면 안에서 바로 보이고, 바로검색은 새 탭에서 결과가 바로 열리고, 홈에서 검색은 검색어를 복사해서 붙여넣으면 돼요.</p>
   </div>
 
   <div class="section">
@@ -96,12 +108,20 @@
     </div>
   </div>
 
-  <div class="section">
-    <div class="label">🖥️ 미리보기 · 사람인</div>
+  <div class="tabs" id="tabs">
+    <button class="tab active" data-tab="preview">미리보기</button>
+    <button class="tab" data-tab="direct">바로검색</button>
+    <button class="tab" data-tab="home">홈에서 검색</button>
+  </div>
+
+  <div class="panel active" id="panel-preview">
+    <div class="site-tabbar" id="siteTabbar"></div>
     <div class="frame-wrap" id="frameWrap">
       <button class="frame-expand-btn" id="frameExpandBtn" title="전체화면으로 보기">⤢</button>
       <div class="frame-status" id="frameStatus">불러오는 중…</div>
-      <iframe id="siteFrame" class="site-frame" title="site preview"></iframe>
+      <div class="frame-scroll" id="frameScroll">
+        <iframe id="siteFrame" class="site-frame" title="site preview"></iframe>
+      </div>
       <a id="frameFallback" class="frame-fallback" target="_blank" rel="noopener noreferrer" style="display:none;">
         <span>⚠️ 이 사이트는 화면 안에 표시할 수 없어요</span>
         <span class="frame-fallback-btn">새 탭에서 열기 ↗</span>
@@ -109,24 +129,25 @@
     </div>
   </div>
 
-  <div class="section">
-    <div class="label">📌 바로검색 (새 탭)</div>
+  <div class="panel" id="panel-direct">
     <div id="directList"></div>
   </div>
 
-  <div class="section">
-    <div class="label">🔗 홈에서 검색 (새 탭)</div>
+  <div class="panel" id="panel-home">
     <div id="homeList"></div>
   </div>
 </div>
 
 <script>
-// 사람인만 좁은 화면(iframe)에서도 레이아웃이 깨지지 않아 화면 안에 바로 표시.
-const previewSite = {name:"사람인", urlTpl:"https://www.saramin.co.kr/zf_user/search/recruit?searchword={kw}"};
+// 사람인은 좁은 화면 그대로 잘 나오고, 잡코리아는 데스크탑 레이아웃(1100px 기준)이 넓은 화면에서만
+// 안 깨져서, iframe을 1100px 폭으로 띄운 뒤 화면 폭에 맞게 축소(scale)해서 보여준다.
+const previewSites = [
+  {name:"사람인", urlTpl:"https://www.saramin.co.kr/zf_user/search/recruit?searchword={kw}"},
+  {name:"잡코리아", urlTpl:"https://www.jobkorea.co.kr/Search/?stext={kw}", nativeWidth:1100, nativeHeight:1700},
+];
 
-// 검색어를 URL에 실어서 결과가 바로 열리는 사이트 (새 탭 - 화면 폭이 좁으면 레이아웃이 깨지는 곳도 있어 새 탭으로 연다)
+// 검색어를 URL에 실어서 결과가 바로 열리는 사이트 (새 탭)
 const directSites = [
-  {name:"잡코리아", urlTpl:"https://www.jobkorea.co.kr/Search/?stext={kw}"},
   {name:"알바몬", urlTpl:"https://www.albamon.com/total-search?keyword={kw}"},
   {name:"원티드", urlTpl:"https://www.wanted.co.kr/search?query={kw}"},
 ];
@@ -141,6 +162,7 @@ const homeSites = [
 
 const KEYWORD_PRESETS = ["차량랩핑", "랩핑", "PPF", "랩핑,PPF", "차량랩핑,PPF"];
 let currentKw = KEYWORD_PRESETS[0];
+let currentPreviewIndex = 0;
 
 function fillKw(urlTpl, kw){
   return urlTpl.replace("{kw}", encodeURIComponent(kw));
@@ -169,7 +191,7 @@ function refreshAll(){
   renderKwPresets();
   renderDirectList();
   renderHomeList();
-  loadPreview();
+  loadPreview(previewSites[currentPreviewIndex]);
 }
 
 function renderDirectList(){
@@ -213,34 +235,56 @@ function toggleExpand(){
   const expanded = wrap.classList.toggle("expanded");
   btn.textContent = expanded ? "✕" : "⤢";
   btn.title = expanded ? "닫기" : "전체화면으로 보기";
+  applyFrameScale();
 }
 
-function loadPreview(){
+function applyFrameScale(){
+  const site = previewSites[currentPreviewIndex];
+  const frame = document.getElementById("siteFrame");
+  const scroll = document.getElementById("frameScroll");
+  if(!site.nativeWidth){
+    frame.style.width = "100%";
+    frame.style.height = "100%";
+    frame.style.transform = "none";
+    scroll.style.overflow = "hidden";
+    return;
+  }
+  const containerWidth = document.getElementById("frameWrap").clientWidth;
+  const scale = containerWidth / site.nativeWidth;
+  frame.style.width = site.nativeWidth + "px";
+  frame.style.height = site.nativeHeight + "px";
+  frame.style.transform = `scale(${scale})`;
+  scroll.style.overflow = "auto";
+}
+
+function loadPreview(site){
   const status = document.getElementById("frameStatus");
+  const scroll = document.getElementById("frameScroll");
   const frame = document.getElementById("siteFrame");
   const fallback = document.getElementById("frameFallback");
-  const url = fillKw(previewSite.urlTpl, currentKw);
+  const url = fillKw(site.urlTpl, currentKw);
   status.style.display = "flex";
   status.textContent = "불러오는 중…";
-  frame.style.display = "none";
+  scroll.style.display = "none";
   fallback.style.display = "none";
   fallback.href = url;
   frame.src = url;
+  applyFrameScale();
 
   const check = setTimeout(() => {
     try{
       const blocked = frame.contentWindow.location.href === "about:blank";
       if(blocked){
         status.style.display = "none";
-        frame.style.display = "none";
+        scroll.style.display = "none";
         fallback.style.display = "flex";
       } else {
         status.style.display = "none";
-        frame.style.display = "block";
+        scroll.style.display = "block";
       }
     }catch(e){
       status.style.display = "none";
-      frame.style.display = "block";
+      scroll.style.display = "block";
     }
   }, 2200);
 
@@ -250,16 +294,37 @@ function loadPreview(){
       if(frame.contentWindow.location.href === "about:blank") return;
     }catch(e){}
     status.style.display = "none";
-    frame.style.display = "block";
+    scroll.style.display = "block";
   };
 }
 
 document.getElementById("frameExpandBtn").addEventListener("click", toggleExpand);
+window.addEventListener("resize", applyFrameScale);
+
+document.getElementById("siteTabbar").innerHTML = previewSites.map((s,i) =>
+  `<button class="site-tab ${i===currentPreviewIndex?'active':''}" data-i="${i}">${s.name}</button>`
+).join("");
+document.getElementById("siteTabbar").addEventListener("click", (e) => {
+  const btn = e.target.closest(".site-tab");
+  if(!btn) return;
+  currentPreviewIndex = +btn.dataset.i;
+  document.querySelectorAll(".site-tab").forEach(t=>t.classList.toggle("active", t===btn));
+  loadPreview(previewSites[currentPreviewIndex]);
+});
+
+document.getElementById("tabs").addEventListener("click", (e) => {
+  const btn = e.target.closest(".tab");
+  if(!btn) return;
+  document.querySelectorAll(".tab").forEach(t => t.classList.toggle("active", t===btn));
+  document.querySelectorAll(".panel").forEach(p => p.classList.remove("active"));
+  document.getElementById("panel-" + btn.dataset.tab).classList.add("active");
+  if(btn.dataset.tab === "preview") applyFrameScale();
+});
 
 renderKwPresets();
 renderDirectList();
 renderHomeList();
-loadPreview();
+loadPreview(previewSites[currentPreviewIndex]);
 
 if("serviceWorker" in navigator){
   window.addEventListener("load", () => {
