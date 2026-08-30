@@ -52,16 +52,35 @@ function absoluteUrl(base, href){
   try{ return new URL(href, base).toString(); }catch(e){ return null; }
 }
 
-// 검색 컨텍스트를 실어나르는 추적 파라미터(검색어, 정렬, 클릭 로그 등)는 같은 공고인데도
-// 키워드/실행 회차마다 값이 달라져서 중복 알림의 원인이 된다. 이런 파라미터만 제거하고
-// 나머지(예: 사람인의 rec_idx처럼 공고를 실제로 구분하는 값)는 남겨서 중복 판단 키로 쓴다.
+// 검색 컨텍스트를 실어나르는 추적 파라미터(검색어, 정렬, 클릭 로그, 세션 UUID 등)는
+// 같은 공고인데도 검색할 때마다 값이 새로 생겨서 "URL 통째로 비교" 방식으로는 중복을
+// 절대 못 잡는다 (예: 사람인 search_uuid는 매 요청마다 랜덤). 그래서 파라미터를
+// 하나하나 걸러내는 대신, URL에서 공고를 실제로 구분하는 ID만 뽑아서 비교한다.
 const VOLATILE_PARAMS = [
   'logpath','sc','listno','searchRow','searchKeyword','stext','keyword','query',
   'Oem_Code','utm_source','utm_medium','utm_campaign','utm_content','utm_term'
 ];
+// 공고 ID가 쿼리 파라미터로 들어있는 사이트 (예: 사람인 ?rec_idx=12345)
+const ID_PARAMS = ['rec_idx', 'idx', 'job_id'];
+
 function dedupKey(urlStr){
   try{
     const u = new URL(urlStr);
+
+    // 1) 알려진 ID 파라미터가 있으면 그 값만으로 키를 만든다 (다른 파라미터는 전부 무시).
+    const idParam = ID_PARAMS.find(p => u.searchParams.has(p));
+    if(idParam){
+      return `${u.origin}${u.pathname}#${idParam}=${u.searchParams.get(idParam)}`;
+    }
+
+    // 2) 경로 자체에 공고 ID가 들어있는 사이트 (예: /Recruit/GI_Read/49826539,
+    //    /jobs/detail/118777040) - 경로엔 추적값이 안 붙으니 경로만으로 충분하다.
+    const hasNumericSegment = u.pathname.split('/').some(seg => /^\d{4,}$/.test(seg));
+    if(hasNumericSegment){
+      return `${u.origin}${u.pathname}`;
+    }
+
+    // 3) 그 외엔 알려진 추적 파라미터만 제거하고 나머지로 비교 (최후 수단).
     VOLATILE_PARAMS.forEach(p => u.searchParams.delete(p));
     u.searchParams.sort();
     u.hash = '';
