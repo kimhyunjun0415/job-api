@@ -102,6 +102,18 @@ function dedupKey(urlStr){
   }
 }
 
+// dedupKey는 seen.json을 불러올 때(seen.map(dedupKey))와 새로 스크랩할 때 둘 다 쓰이는데,
+// 한쪽에만 맞고 다른 쪽에 넣으면 깨지는 버그가 실제로 한 번 있었다 (사람인 #rec_idx= 형태를
+// 다시 넣으면 ID가 사라지던 문제). 재발하면 바로 알아채도록 시작할 때 한 번 검증한다.
+(function assertDedupKeyIsIdempotent(){
+  const sample = 'https://www.saramin.co.kr/zf_user/jobs/relay/view?rec_idx=12345&search_uuid=abc-def';
+  const once = dedupKey(sample);
+  const twice = dedupKey(once);
+  if(once !== twice){
+    throw new Error(`dedupKey is not idempotent: ${JSON.stringify(sample)} -> ${JSON.stringify(once)} -> ${JSON.stringify(twice)}`);
+  }
+})();
+
 async function scrapeSite(site, keywords){
   if(!site.urlTpl){ console.log(`Skipping ${site.name} (no URL template)`); return []; }
   const found = [];
