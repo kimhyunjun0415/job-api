@@ -140,10 +140,11 @@
 
 <script>
 // 이미 검색어가 적용된 URL을 그대로 iframe에 넣어서 보여준다 (홈 열고 검색창에 입력하는
-// 단계 없이, 한 번에 검색결과 URL로 바로 로드).
+// 단계 없이, 한 번에 검색결과 URL로 바로 로드). 잡코리아는 폭이 좁으면 레이아웃이 깨져서
+// 넓게(1100px) 띄운 뒤 화면 크기에 맞게 축소(scale)해서 보여준다.
 const previewSites = [
   {name:"사람인", urlTpl:"https://www.saramin.co.kr/zf_user/search/recruit?searchword={kw}"},
-  {name:"잡코리아", urlTpl:"https://www.jobkorea.co.kr/Search/?stext={kw}"},
+  {name:"잡코리아", urlTpl:"https://www.jobkorea.co.kr/Search/?stext={kw}", nativeWidth:1100, nativeHeight:1700},
 ];
 
 // 검색어를 URL에 실어서 결과가 바로 열리는 사이트 (새 탭)
