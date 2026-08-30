@@ -28,7 +28,7 @@ const SEEN_PATH = path.join(process.cwd(), 'data', 'seen.json');
 const config = JSON.parse(fs.readFileSync(CONFIG_PATH, 'utf8'));
 let seen = [];
 try { seen = JSON.parse(fs.readFileSync(SEEN_PATH, 'utf8')); } catch(e){ seen = []; }
-const seenSet = new Set(seen);
+const seenSet = new Set(seen.map(dedupKey));
 
 function buildUrl(tpl, kw){
   return tpl.replace('{kw}', encodeURIComponent(kw));
@@ -47,6 +47,25 @@ async function fetchPage(url){
 
 function absoluteUrl(base, href){
   try{ return new URL(href, base).toString(); }catch(e){ return null; }
+}
+
+// 검색 컨텍스트를 실어나르는 추적 파라미터(검색어, 정렬, 클릭 로그 등)는 같은 공고인데도
+// 키워드/실행 회차마다 값이 달라져서 중복 알림의 원인이 된다. 이런 파라미터만 제거하고
+// 나머지(예: 사람인의 rec_idx처럼 공고를 실제로 구분하는 값)는 남겨서 중복 판단 키로 쓴다.
+const VOLATILE_PARAMS = [
+  'logpath','sc','listno','searchRow','searchKeyword','stext','keyword','query',
+  'Oem_Code','utm_source','utm_medium','utm_campaign','utm_content','utm_term'
+];
+function dedupKey(urlStr){
+  try{
+    const u = new URL(urlStr);
+    VOLATILE_PARAMS.forEach(p => u.searchParams.delete(p));
+    u.searchParams.sort();
+    u.hash = '';
+    return u.toString();
+  }catch(e){
+    return urlStr;
+  }
 }
 
 async function scrapeSite(site, keywords){
@@ -69,22 +88,26 @@ async function scrapeSite(site, keywords){
       // Avoid search pagination and anchors
       if(full.includes('#') && text.length < 30) return;
       // Simple de-dup by URL
-      if(seenSet.has(full)) return;
-      // Heuristic: include if text contains one of keywords or url contains some job-like path
+      if(seenSet.has(dedupKey(full))) return;
+      // 키워드가 실제로 링크 텍스트에 들어있는 것만 채용공고 후보로 본다.
+      // ("채용/공고/recruit 등 그럴듯한 단어가 있으면 통과"하던 예전 기준은 랩핑/PPF랑
+      // 전혀 상관없는 메뉴·배너 링크까지 잡아서 쓸데없는 알림의 원인이었다.)
       const textLower = text.toLowerCase();
-      const matchesKw = keywords.some(k => textLower.includes(k.replace(/\s+/g,'').toLowerCase()) || text.toLowerCase().includes(k.toLowerCase()));
-      const jobLike = /recruit|view|job|vacancy|position|채용|공고|채용공고/.test(full.toLowerCase()) || /채용|공고|모집|채용정보/.test(text);
-      if(matchesKw || jobLike){
+      const matchesKw = keywords.some(k => textLower.includes(k.replace(/\s+/g,'').toLowerCase()) || textLower.includes(k.toLowerCase()));
+      if(matchesKw){
         found.push({ title: text.replace(/\s+/g,' '), url: full, site: site.name });
       }
     });
     // small delay between keyword requests
     await new Promise(r => setTimeout(r, 500));
   }
-  // dedupe by url
+  // dedupe by normalized url (같은 공고가 키워드별로 두 번 잡히는 것 방지)
   const uniq = [];
   const s = new Set();
-  for(const f of found){ if(!s.has(f.url)){ s.add(f.url); uniq.push(f); } }
+  for(const f of found){
+    const k = dedupKey(f.url);
+    if(!s.has(k)){ s.add(k); uniq.push(f); }
+  }
   return uniq.slice(0, 10);
 }
 
@@ -129,12 +152,12 @@ async function sendNtfyNotification(item){
       const items = await scrapeSite(site, keywords);
       console.log(`Found ${items.length} candidate(s) on ${site.name}`);
       for(const it of items){
-        if(seenSet.has(it.url)) continue;
+        if(seenSet.has(dedupKey(it.url))) continue;
         console.log('New item:', it.title, it.url);
         // send notification
         const result = await sendNtfyNotification(it);
         if(result.ok){
-          seenSet.add(it.url);
+          seenSet.add(dedupKey(it.url));
           allNew.push(it);
         }
         // small delay to avoid rate limits
