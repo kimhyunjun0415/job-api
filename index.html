@@ -90,6 +90,15 @@
   .frame-fallback span:first-child{font-size:13px;color:var(--text-dim);line-height:1.5;}
   .frame-fallback-btn{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--yellow);
     border:1px solid rgba(245,194,66,.35);background:rgba(245,194,66,.1);padding:8px 16px;border-radius:999px;}
+  .kw-preset-row{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;}
+  .kw-preset{font-size:12px;padding:5px 11px;border-radius:999px;background:rgba(255,255,255,.05);
+    color:var(--text-dim);border:1px solid var(--line);cursor:pointer;}
+  .kw-preset.active{background:rgba(245,194,66,.15);color:var(--yellow);border-color:rgba(245,194,66,.3);}
+  .kw-custom-row{display:flex;gap:8px;margin-bottom:14px;}
+  .kw-custom-input{flex:1;background:rgba(255,255,255,.05);border:1px solid var(--line);border-radius:8px;
+    padding:8px 10px;font-size:12.5px;color:var(--text);outline:none;}
+  .kw-custom-btn{font-family:'JetBrains Mono',monospace;font-size:11.5px;padding:0 14px;border-radius:8px;
+    background:rgba(143,168,184,.18);color:var(--accent);border:1px solid rgba(143,168,184,.3);cursor:pointer;}
 </style>
 </head>
 <body>
@@ -132,15 +141,24 @@ const jobs = [
 ];
 
 const sites = [
-  {name:"사람인", note:"API 연동 예정 · 지금은 검색 링크", url:"https://www.saramin.co.kr/zf_user/search/recruit?searchword=차량랩핑", direct:true},
-  {name:"잡코리아", note:"차량 랩핑 · PPF 통합 검색", url:"https://www.jobkorea.co.kr/Search/?stext=차량랩핑", direct:true},
-  {name:"알바몬", note:"단기/시공 건당 공고 다수", url:"https://www.albamon.com/jobs/search?keyword=차량랩핑", direct:true},
-  {name:"원티드", note:"PPF 키워드로 검색", url:"https://www.wanted.co.kr/search?query=PPF", direct:true},
-  {name:"알바천국", note:"홈에서 '차량랩핑' 직접 검색", url:"https://www.alba.co.kr/", direct:false},
-  {name:"인크루트", note:"홈에서 '차량랩핑·PPF' 직접 검색", url:"https://www.incruit.com/", direct:false},
-  {name:"워크넷 (고용노동부)", note:"관공서·기술직 채용 다수, 홈에서 검색", url:"https://www.work.go.kr/", direct:false},
-  {name:"당근 알바", note:"동네 카센터·랩핑샵 소규모 채용", url:"https://www.daangn.com/kr/jobs/", direct:false},
+  {name:"사람인", note:"검색 결과 바로 표시", urlTpl:"https://www.saramin.co.kr/zf_user/search/recruit?searchword={kw}", direct:true},
+  {name:"잡코리아", note:"검색 결과 바로 표시", urlTpl:"https://www.jobkorea.co.kr/Search/?stext={kw}", direct:true},
+  {name:"알바몬", note:"검색 결과 바로 표시", urlTpl:"https://www.albamon.com/jobs/search?keyword={kw}", direct:true},
+  {name:"원티드", note:"검색 결과 바로 표시", urlTpl:"https://www.wanted.co.kr/search?query={kw}", direct:true},
+  {name:"알바천국", note:"홈에서 직접 검색 필요", urlTpl:null, url:"https://www.alba.co.kr/", direct:false},
+  {name:"인크루트", note:"홈에서 직접 검색 필요", urlTpl:null, url:"https://www.incruit.com/", direct:false},
+  {name:"워크넷 (고용노동부)", note:"홈에서 직접 검색 필요", urlTpl:null, url:"https://www.work.go.kr/", direct:false},
+  {name:"당근 알바", note:"홈에서 직접 검색 필요", urlTpl:null, url:"https://www.daangn.com/kr/jobs/", direct:false},
 ];
+
+const KEYWORD_PRESETS = ["차량랩핑", "랩핑", "PPF", "랩핑,PPF", "차량랩핑,PPF"];
+let currentKw = KEYWORD_PRESETS[0];
+let currentSiteIndex = 0;
+
+function siteUrl(site, kw){
+  if(!site.direct || !site.urlTpl) return site.url;
+  return site.urlTpl.replace("{kw}", encodeURIComponent(kw));
+}
 
 let keywords = ["차량 랩핑", "PPF"];
 let region = "서울 전체";
@@ -189,6 +207,12 @@ function renderContent(){
       </div>`).join("");
   } else if(activeTab === "sites"){
     c.innerHTML = `
+      <div class="label">🔤 검색어 조합</div>
+      <div class="kw-preset-row" id="kwPresetRow"></div>
+      <div class="kw-custom-row">
+        <input id="kwCustomInput" class="kw-custom-input" placeholder="직접 입력 (예: 랩핑기사)" />
+        <button class="kw-custom-btn" onclick="applyCustomKw()">적용</button>
+      </div>
       <div class="site-tabbar" id="siteTabbar"></div>
       <div class="frame-wrap" id="frameWrap">
         <div class="frame-status" id="frameStatus">불러오는 중…</div>
@@ -198,16 +222,18 @@ function renderContent(){
           <span class="frame-fallback-btn">새 탭에서 열기 ↗</span>
         </a>
       </div>`;
+    renderKwPresets();
     document.getElementById("siteTabbar").innerHTML = sites.map((s,i) =>
-      `<button class="site-tab ${i===0?'active':''}" data-i="${i}">${s.name}</button>`
+      `<button class="site-tab ${i===currentSiteIndex?'active':''}" data-i="${i}">${s.name}</button>`
     ).join("");
     document.getElementById("siteTabbar").addEventListener("click", (e) => {
       const btn = e.target.closest(".site-tab");
       if(!btn) return;
+      currentSiteIndex = +btn.dataset.i;
       document.querySelectorAll(".site-tab").forEach(t=>t.classList.toggle("active", t===btn));
-      loadSite(sites[+btn.dataset.i]);
+      loadSite(sites[currentSiteIndex]);
     });
-    loadSite(sites[0]);
+    loadSite(sites[currentSiteIndex]);
   } else {
     c.innerHTML = `
       <div class="alert-card">
@@ -223,16 +249,38 @@ function renderContent(){
   }
 }
 
+function renderKwPresets(){
+  document.getElementById("kwPresetRow").innerHTML = KEYWORD_PRESETS.map(k =>
+    `<button class="kw-preset ${k===currentKw?'active':''}" data-k="${k}">${k}</button>`
+  ).join("");
+  document.getElementById("kwPresetRow").querySelectorAll(".kw-preset").forEach(btn => {
+    btn.addEventListener("click", () => {
+      currentKw = btn.dataset.k;
+      renderKwPresets();
+      loadSite(sites[currentSiteIndex]);
+    });
+  });
+}
+
+function applyCustomKw(){
+  const v = document.getElementById("kwCustomInput").value.trim();
+  if(!v) return;
+  currentKw = v;
+  renderKwPresets();
+  loadSite(sites[currentSiteIndex]);
+}
+
 function loadSite(site){
   const status = document.getElementById("frameStatus");
   const frame = document.getElementById("siteFrame");
   const fallback = document.getElementById("frameFallback");
+  const url = siteUrl(site, currentKw);
   status.style.display = "flex";
   status.textContent = "불러오는 중…";
   frame.style.display = "none";
   fallback.style.display = "none";
-  fallback.href = site.url;
-  frame.src = site.url;
+  fallback.href = url;
+  frame.src = url;
 
   const check = setTimeout(() => {
     try{
@@ -246,7 +294,6 @@ function loadSite(site){
         frame.style.display = "block";
       }
     }catch(e){
-      // cross-origin access = navigation actually succeeded (site loaded)
       status.style.display = "none";
       frame.style.display = "block";
     }
@@ -255,7 +302,7 @@ function loadSite(site){
   frame.onload = () => {
     clearTimeout(check);
     try{
-      if(frame.contentWindow.location.href === "about:blank") return; // still blocked, timeout will handle
+      if(frame.contentWindow.location.href === "about:blank") return;
     }catch(e){}
     status.style.display = "none";
     frame.style.display = "block";
