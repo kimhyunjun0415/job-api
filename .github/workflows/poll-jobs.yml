@@ -50,5 +50,21 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add data/seen.json
-          git commit -m "chore: update seen jobs" || echo "no changes to commit"
-          git push
+          if git diff --cached --quiet; then
+            echo "no changes to commit"
+            exit 0
+          fi
+          git commit -m "chore: update seen jobs"
+          # 그 사이 다른 커밋이 먼저 push됐으면(예: 코드 수정) 그냥 실패하고 끝내지 않고
+          # 최신 상태를 받아 다시 얹어서 재시도한다. 이게 안 되면 seen.json이 실제로는
+          # 저장 안 된 채로 넘어가서 다음 실행 때 같은 알림이 또 나가게 된다.
+          for i in 1 2 3 4 5; do
+            if git push; then
+              exit 0
+            fi
+            echo "push failed, fetching and retrying ($i)..."
+            git fetch origin main
+            git rebase origin/main
+          done
+          echo "::error::Failed to push data/seen.json after retries - notifications will repeat next run"
+          exit 1
