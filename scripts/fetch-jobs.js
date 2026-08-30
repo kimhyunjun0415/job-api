@@ -68,9 +68,21 @@ function dedupKey(urlStr){
     const u = new URL(urlStr);
 
     // 1) 알려진 ID 파라미터가 있으면 그 값만으로 키를 만든다 (다른 파라미터는 전부 무시).
-    const idParam = ID_PARAMS.find(p => u.searchParams.has(p));
-    if(idParam){
-      return `${u.origin}${u.pathname}#${idParam}=${u.searchParams.get(idParam)}`;
+    //    이 함수가 만들어낸 키(#rec_idx=123 형태)를 seen.json에서 다시 불러와 같은
+    //    함수에 또 넣는 경우도 있으므로, 쿼리뿐 아니라 해시도 같이 확인해야 한다 -
+    //    안 그러면 저장된 키를 다시 정규화할 때 해시가 통째로 날아가면서 ID가 사라지고
+    //    모든 항목이 같은 값으로 뭉개져 버린다 (실제로 이 버그로 중복 알림이 났었음).
+    let idParam = ID_PARAMS.find(p => u.searchParams.has(p));
+    let idValue = idParam ? u.searchParams.get(idParam) : null;
+    if(!idValue && u.hash){
+      const m = u.hash.slice(1).match(/^([a-zA-Z_]+)=(.+)$/);
+      if(m && ID_PARAMS.includes(m[1])){
+        idParam = m[1];
+        idValue = decodeURIComponent(m[2]);
+      }
+    }
+    if(idValue){
+      return `${u.origin}${u.pathname}#${idParam}=${idValue}`;
     }
 
     // 2) 경로 자체에 공고 ID가 들어있는 사이트 (예: /Recruit/GI_Read/49826539,
