@@ -23,10 +23,16 @@
   .app{max-width:400px;margin:24px auto;background:var(--panel);border:1px solid var(--line);
     border-radius:28px;overflow:hidden;box-shadow:0 20px 60px rgba(15,23,32,.12);
     min-height:calc(100vh - 48px);}
-  header{padding:24px 20px 16px;background:linear-gradient(#FAFBFC,var(--panel));border-bottom:1px solid var(--line);}
+  header{padding:24px 20px 16px;background:linear-gradient(#FAFBFC,var(--panel));border-bottom:1px solid var(--line);position:relative;}
   header .brand{display:flex;align-items:center;gap:8px;margin-bottom:4px;}
   header .brand span{font-weight:600;font-size:18px;letter-spacing:.02em;}
   header p{margin:0;font-size:12.5px;color:var(--text-dim);}
+  .close-btn{position:absolute;top:16px;right:16px;width:30px;height:30px;border-radius:8px;
+    background:var(--surface);color:var(--text-dim);border:1px solid var(--line);font-size:14px;
+    display:flex;align-items:center;justify-content:center;cursor:pointer;}
+  .close-hint{position:absolute;top:52px;right:16px;font-size:10.5px;color:var(--text-mute);
+    background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:6px 10px;
+    max-width:150px;text-align:right;line-height:1.4;display:none;}
   .banner{margin:16px 20px 0;display:flex;gap:8px;background:rgba(61,110,140,.1);
     border:1px solid rgba(61,110,140,.25);border-radius:10px;padding:10px 12px;}
   .banner p{margin:0;font-size:11.5px;color:var(--accent);line-height:1.5;}
@@ -88,6 +94,8 @@
 <body>
 <div class="app">
   <header>
+    <button class="close-btn" id="closeBtn" title="종료">✕</button>
+    <div class="close-hint" id="closeHint">브라우저 보안 정책상 자동으로 못 닫아요. 탭을 직접 닫아주세요.</div>
     <div class="brand">
       <span style="color:var(--accent);">🚗</span>
       <span class="display">실시간 구인 불러오기</span>
@@ -320,6 +328,17 @@ document.getElementById("tabs").addEventListener("click", (e) => {
   document.querySelectorAll(".panel").forEach(p => p.classList.remove("active"));
   document.getElementById("panel-" + btn.dataset.tab).classList.add("active");
   if(btn.dataset.tab === "preview") applyFrameScale();
+});
+
+document.getElementById("closeBtn").addEventListener("click", () => {
+  window.close();
+  // 스크립트로 열지 않은 탭/창은 브라우저가 window.close()를 무시한다.
+  // 500ms 뒤에도 이 코드가 실행 중이면(=페이지가 안 닫혔으면) 안내 문구를 보여준다.
+  setTimeout(() => {
+    const hint = document.getElementById("closeHint");
+    hint.style.display = "block";
+    setTimeout(() => { hint.style.display = "none"; }, 3000);
+  }, 500);
 });
 
 renderKwPresets();
