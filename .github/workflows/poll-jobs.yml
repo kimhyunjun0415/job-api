@@ -2,8 +2,9 @@ name: Poll job sites and send ntfy notifications
 
 on:
   schedule:
-    # every 30 minutes
-    - cron: '*/30 * * * *'
+    # 30분마다, 단 한국시간(KST, UTC+9) 09:00~24:00에만 실행.
+    # UTC 0~14시 = KST 09:00~23:59 (KST 00:00~09:00은 조용히 쉼)
+    - cron: '*/30 0-14 * * *'
   workflow_dispatch: {}
 
 permissions:
