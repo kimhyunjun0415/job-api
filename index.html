@@ -331,9 +331,14 @@ document.getElementById("tabs").addEventListener("click", (e) => {
 });
 
 document.getElementById("closeBtn").addEventListener("click", () => {
+  // 앱(APK) 안에서 열렸으면 네이티브 브릿지로 확실하게 종료.
+  if (window.AndroidApp && window.AndroidApp.closeApp) {
+    window.AndroidApp.closeApp();
+    return;
+  }
+  // 일반 브라우저에서는 window.close()를 시도 (스크립트로 열지 않은 탭/방문 기록이
+  // 남은 탭은 브라우저가 막는다 - 500ms 뒤에도 이 코드가 실행 중이면 안내 문구를 보여준다).
   window.close();
-  // 스크립트로 열지 않은 탭/창은 브라우저가 window.close()를 무시한다.
-  // 500ms 뒤에도 이 코드가 실행 중이면(=페이지가 안 닫혔으면) 안내 문구를 보여준다.
   setTimeout(() => {
     const hint = document.getElementById("closeHint");
     hint.style.display = "block";
