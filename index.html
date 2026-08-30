@@ -74,6 +74,22 @@
   .add-chip{display:flex;align-items:center;gap:4px;background:rgba(255,255,255,.05);border-radius:999px;padding:4px 4px 4px 10px;}
   .add-btn{width:16px;height:16px;border-radius:999px;background:rgba(143,168,184,.25);color:var(--accent);
     border:none;display:flex;align-items:center;justify-content:center;font-size:11px;cursor:pointer;}
+  .site-tabbar{display:flex;gap:6px;overflow-x:auto;padding-bottom:10px;margin-bottom:10px;
+    border-bottom:1px solid var(--line);}
+  .site-tabbar::-webkit-scrollbar{display:none;}
+  .site-tab{flex:0 0 auto;font-family:'Inter',sans-serif;font-size:12px;padding:6px 12px;border-radius:999px;
+    background:rgba(255,255,255,.05);color:var(--text-dim);border:1px solid var(--line);cursor:pointer;white-space:nowrap;}
+  .site-tab.active{background:rgba(143,168,184,.18);color:var(--accent);border-color:rgba(143,168,184,.35);}
+  .frame-wrap{position:relative;width:100%;height:420px;border-radius:12px;overflow:hidden;
+    border:1px solid var(--line);background:var(--surface);}
+  .frame-status{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+    font-size:12.5px;color:var(--text-mute);z-index:1;}
+  .site-frame{width:100%;height:100%;border:none;display:none;background:#fff;}
+  .frame-fallback{position:absolute;inset:0;display:none;flex-direction:column;align-items:center;
+    justify-content:center;gap:12px;text-decoration:none;padding:24px;text-align:center;}
+  .frame-fallback span:first-child{font-size:13px;color:var(--text-dim);line-height:1.5;}
+  .frame-fallback-btn{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--yellow);
+    border:1px solid rgba(245,194,66,.35);background:rgba(245,194,66,.1);padding:8px 16px;border-radius:999px;}
 </style>
 </head>
 <body>
@@ -172,15 +188,26 @@ function renderContent(){
         </div>
       </div>`).join("");
   } else if(activeTab === "sites"){
-    c.innerHTML = `<p style="font-size:12px;color:var(--text-dim);margin:0 0 12px;">API가 없는 사이트는 검색 결과 또는 홈으로 바로 연결돼요.</p>` +
-      sites.map(s => `
-      <a class="site-card" href="${s.url}" target="_blank" rel="noopener noreferrer">
-        <div>
-          <div class="site-name">${s.name} <span class="badge ${s.direct?'direct':''}">${s.direct?'검색결과 바로':'홈 → 검색'}</span></div>
-          <p class="site-note">${s.note}</p>
-        </div>
-        <span style="color:var(--text-mute);">↗</span>
-      </a>`).join("");
+    c.innerHTML = `
+      <div class="site-tabbar" id="siteTabbar"></div>
+      <div class="frame-wrap" id="frameWrap">
+        <div class="frame-status" id="frameStatus">불러오는 중…</div>
+        <iframe id="siteFrame" class="site-frame" title="site preview"></iframe>
+        <a id="frameFallback" class="frame-fallback" target="_blank" rel="noopener noreferrer" style="display:none;">
+          <span>⚠️ 이 사이트는 화면 안에 표시할 수 없어요</span>
+          <span class="frame-fallback-btn">새 탭에서 열기 ↗</span>
+        </a>
+      </div>`;
+    document.getElementById("siteTabbar").innerHTML = sites.map((s,i) =>
+      `<button class="site-tab ${i===0?'active':''}" data-i="${i}">${s.name}</button>`
+    ).join("");
+    document.getElementById("siteTabbar").addEventListener("click", (e) => {
+      const btn = e.target.closest(".site-tab");
+      if(!btn) return;
+      document.querySelectorAll(".site-tab").forEach(t=>t.classList.toggle("active", t===btn));
+      loadSite(sites[+btn.dataset.i]);
+    });
+    loadSite(sites[0]);
   } else {
     c.innerHTML = `
       <div class="alert-card">
@@ -194,6 +221,45 @@ function renderContent(){
       <p style="font-size:11.5px;color:var(--text-mute);">▸ API 연동 완료 후 이 화면에서 알림 On/Off를 조절할 수 있어요.</p>
     `;
   }
+}
+
+function loadSite(site){
+  const status = document.getElementById("frameStatus");
+  const frame = document.getElementById("siteFrame");
+  const fallback = document.getElementById("frameFallback");
+  status.style.display = "flex";
+  status.textContent = "불러오는 중…";
+  frame.style.display = "none";
+  fallback.style.display = "none";
+  fallback.href = site.url;
+  frame.src = site.url;
+
+  const check = setTimeout(() => {
+    try{
+      const blocked = frame.contentWindow.location.href === "about:blank";
+      if(blocked){
+        status.style.display = "none";
+        frame.style.display = "none";
+        fallback.style.display = "flex";
+      } else {
+        status.style.display = "none";
+        frame.style.display = "block";
+      }
+    }catch(e){
+      // cross-origin access = navigation actually succeeded (site loaded)
+      status.style.display = "none";
+      frame.style.display = "block";
+    }
+  }, 2200);
+
+  frame.onload = () => {
+    clearTimeout(check);
+    try{
+      if(frame.contentWindow.location.href === "about:blank") return; // still blocked, timeout will handle
+    }catch(e){}
+    status.style.display = "none";
+    frame.style.display = "block";
+  };
 }
 
 document.getElementById("tabs").addEventListener("click", (e) => {
