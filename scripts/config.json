@@ -1,7 +1,7 @@
 {
   "keywords": ["랩핑", "PPF", "자동차 랩핑", "차량 랩핑"],
   "requiredKeywords": [],
-  "excludeKeywords": ["물류", "분류", "적재", "패킹", "피킹", "사상", "가공", "옥외", "금형", "절삭", "중문", "통근", "일급", "알바", "제과"],
+  "excludeKeywords": ["물류", "분류", "적재", "패킹", "피킹", "사상", "가공", "옥외", "금형", "절삭", "중문", "통근", "일급", "알바", "제과", "출하", "포장", "광고"],
   "sites": [
     { "name": "사람인", "urlTpl": "https://www.saramin.co.kr/zf_user/search/recruit?searchword={kw}" },
     { "name": "잡코리아", "urlTpl": "https://www.jobkorea.co.kr/Search/?stext={kw}" },
